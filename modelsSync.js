@@ -27,7 +27,8 @@ data.relations.forEach(function (def) {
 
 // Sync DB
 if (!schema.isActual()) {
-    schema.autoupdate();
+    //schema.autoupdate();
+    schema.automigrate();
 }
 
 // Done!
@@ -44,7 +45,10 @@ function reduceFn(data, file) {
     return data;
 
     function createModel(json) {
+
+        log('translating schema', modelName);
         var def       = translateSchema(modelName, json);
+        log('defining', modelName);
         var model     = schema.define(modelName, def.schema);
 
         Object.keys(model).forEach(function(key) {
@@ -119,8 +123,6 @@ function translateSchema(modelName, obj) {
     });
 
     result.schema = util.escapeKeys(result.schema);
-
-    log('\n', result.schema);
 
     return result;
 }

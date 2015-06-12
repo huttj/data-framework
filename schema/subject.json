@@ -7,9 +7,17 @@
     "Intersex",
     "Unknown"
   ],
+  "Time of Death": "date",
+  "Cause of Death": [
+    "gunshot",
+    "homicide",
+    "unknown"
+  ],
+  "Disposition": "string",
 
   "Mental Illness": ">MentalIllness",
   "Race": ">Race",
   "Submitter": ">Submitter",
-  "Death": "-Death"
+  "Location of Death": ">Location",
+  "Responsible Officer": ">Officer"
 }
