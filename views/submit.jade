@@ -1,0 +1,36 @@
+extends layout
+
+block content
+  h1= title
+  p Welcome to #{title}
+
+
+  form(action="/submit/#{schema}" method="POST")
+    +parseObject(schemas[schema])
+    button(type="submit") Submit
+
+mixin parseObject(obj)
+  div
+    - if (obj !== null)
+      - each val, key in obj
+        - if (typeof val === 'string')
+          +makeInput(key, val)
+        - else if (val.map)
+          +makeInput(key, 'enum', val)
+        - else if (typeof val === 'object')
+          h2= util.camelToTitle(key)
+          mixin parseObject(val)
+
+mixin makeInput(label, type, enumVal)
+  label= util.camelToTitle(label)
+    - if (type === 'string')
+      input(type="text")
+    - else if (type === 'number')
+      input(type="number")
+    - if (type === 'date')
+      input(type="date")
+    - else if (type === 'enum' && enumVal)
+      select
+        - each choice in enumVal
+          option(value="#{choice}")= choice
+    br

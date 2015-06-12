@@ -1,0 +1,10 @@
+extends layout
+
+block content
+  h1= title
+  p Welcome to #{title}
+
+  ul
+    - for val, key in schemas
+      li
+        a(href="/submit/#{key}") #{util.camelToTitle(key)} (#{counts[key]})
