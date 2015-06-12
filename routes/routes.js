@@ -2,6 +2,8 @@ var promise = require('bluebird');
 var express = require('express');
 var router = express.Router();
 var fs = require('fs');
+var log = require(__basedir + 'log');
+var util = require(__basedir + 'util');
 
 // Redirect general api calls to latest version
 router.get(/\/api\/(?!v\d)(.*)/, function (req, res, next) {
@@ -52,15 +54,14 @@ router.route('/submit/:type')
     })
     .post(function(req, res, next) {
 
-        console.log(req);
+        var modelName = req.params.type;
+        var data = util.escapeKeys(req.body);
 
-        var variables = {
-            title: 'Express',
-            schemas: req.schemas,
-            util: req.util
-        };
+        log(req.body, data, modelName);
 
-        res.render('index', variables);
+        req.models[modelName].create(data, function() {
+            res.redirect('/');
+        });
 
     });
 

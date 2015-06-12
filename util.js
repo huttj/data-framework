@@ -1,3 +1,5 @@
+var log = require('./log');
+
 var util = {};
 
 util.collapse = function collapse(obj, delimiter) {
@@ -51,13 +53,41 @@ util.inflate = function inflate(obj, delimiter) {
 };
 
 util.camelToSpace = function camelToSpace(str) {
-    return str.split(/(?=[A-Z]])/).map(String.prototype.toLowerCase.call).join(' ');
+    return str && str.split(/(?=[A-Z]])/).map(String.prototype.toLowerCase.call).join(' ');
 };
 
-util.camelToTitle = function camelToSpace(str) {
-    return str.split(/(?=[A-Z])/).map(function(n) {
+util.delimitedToTitle = function delimitedToTitle(str) {
+    return str && str.split(/[^A-Za-z0-9]/).map(util.capitalize).join('');
+};
+
+util.capitalize = function capitalize(word) {
+    return word && word[0].toUpperCase() + word.substr(1);
+};
+
+util.camelToTitle = function camelToTitle(str) {
+    return str && str.split(/(?=[A-Z])/).map(function(n) {
         return n[0].toUpperCase() + n.slice(1);
     }).join(' ');
 };
+
+util.snakeToSpace = function snakeToSpace(str) {
+    return str && str.replace(/_/g, ' ');
+};
+
+util.spaceToSnake = function spaceToSnake(str) {
+    return str && str.replace(/ /g, '_');
+};
+
+util.escapeKeys   = makeTransformKeysFunction(util.spaceToSnake);
+util.unescapeKeys = makeTransformKeysFunction(util.snakeToSpace);
+
+function makeTransformKeysFunction(transformation) {
+    return function transformKeys(obj) {
+        return obj && Object.keys(obj).reduce(function (res, key) {
+            res[transformation(key)] = obj[key];
+            return res;
+        }, {})
+    }
+}
 
 module.exports = util;

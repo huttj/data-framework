@@ -1,0 +1,6 @@
+{
+  "Country": "string",
+  "City": "string",
+  "State": "string",
+  "Zipcode": "string"
+}

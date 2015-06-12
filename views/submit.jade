@@ -18,19 +18,19 @@ mixin parseObject(obj)
         - else if (val.map)
           +makeInput(key, 'enum', val)
         - else if (typeof val === 'object')
-          h2= util.camelToTitle(key)
-          mixin parseObject(val)
+          // h2= util.camelToTitle(key)
+          // mixin parseObject(val)
 
 mixin makeInput(label, type, enumVal)
-  label= util.camelToTitle(label)
+  label(for="#{label}")= label
     - if (type === 'string')
-      input(type="text")
+      input(type="text" id="#{label}" name="#{label}")
     - else if (type === 'number')
-      input(type="number")
+      input(type="number" id="#{label}" name="#{label}")
     - if (type === 'date')
-      input(type="date")
+      input(type="date" id="#{label}" name="#{label}")
     - else if (type === 'enum' && enumVal)
-      select
+      select(id="#{label}" name="#{label}")
         - each choice in enumVal
           option(value="#{choice}")= choice
     br

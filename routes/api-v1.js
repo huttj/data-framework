@@ -1,5 +1,7 @@
 var express = require('express');
-var router = express.Router();
+var router  = express.Router();
+var util    = require(__basedir + 'util');
+var log     = require(__basedir + 'log');
 
 router.get('/', function(req, res) {
   var routes = {
@@ -17,10 +19,14 @@ router.get('/entities', function(req, res, next) {
 });
 
 /* GET users listing. */
-router.get('/:entityId', function(req, res, next) {
-  var entity = req.params.entityId;
+router.get('/:entityType', function(req, res, next) {
+  log('GET', '/' + req.param);
 
-  res.send(entity);
+  var entity = util.delimitedToTitle(req.params.entityType);
+
+  req.models[entity].allAsync().then(function(posts) {
+    res.send(JSON.stringify(posts));
+  });
 });
 
 module.exports = router;

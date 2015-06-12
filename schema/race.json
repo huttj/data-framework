@@ -1,0 +1,21 @@
+{
+  "Race": "string",
+  "Census Ethnicity": [
+    "Hispanic",
+    "White",
+    "Black or African American",
+    "American Indian or Alaska Native",
+    "Asian Indian",
+    "Chinese",
+    "Filipino",
+    "Other Asian",
+    "Japanese",
+    "Korean",
+    "Vietnamese",
+    "Native Hawaiian",
+    "Guamanian or Chamorro",
+    "Samoan",
+    "Other Pacific Islander",
+    "Other"
+  ]
+}

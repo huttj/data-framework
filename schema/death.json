@@ -1,0 +1,12 @@
+{
+  "Date": "date",
+  "Address": "string",
+  "Cause": [
+    "gunshot",
+    "homicide"
+  ],
+  "Disposition": "string",
+
+  "Responsible Officer": ">Officer",
+  "Location": ">Location"
+}
