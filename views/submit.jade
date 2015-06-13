@@ -14,7 +14,10 @@ mixin parseObject(obj)
     - if (obj !== null)
       - each val, key in obj
         - if (typeof val === 'string')
-          +makeInput(key, val)
+          - if ('-<>='.match(val[0]))
+            +makeModelSelector(key, val.substr(1))
+          - else
+            +makeInput(key, val)
         - else if (val.map)
           +makeInput(key, 'enum', val)
         - else if (typeof val === 'object')
@@ -23,14 +26,22 @@ mixin parseObject(obj)
 
 mixin makeInput(label, type, enumVal)
   label(for="#{label}")= label
-    - if (type === 'string')
-      input(type="text" id="#{label}" name="#{label}")
-    - else if (type === 'number')
-      input(type="number" id="#{label}" name="#{label}")
-    - if (type === 'date')
-      input(type="date" id="#{label}" name="#{label}")
-    - else if (type === 'enum' && enumVal)
-      select(id="#{label}" name="#{label}")
-        - each choice in enumVal
-          option(value="#{choice}")= choice
-    br
+  - if (type === 'string')
+    input(type="text" id="#{label}" name="#{label}")
+  - else if (type === 'number')
+    input(type="number" id="#{label}" name="#{label}")
+  - if (type === 'date')
+    input(type="date" id="#{label}" name="#{label}")
+  - else if (type === 'enum' && enumVal)
+    select(id="#{label}" name="#{label}")
+      - each choice in enumVal
+        option(value="#{choice}")= choice
+  br
+
+mixin makeModelSelector(label, model)
+  label(for="#{label}")= label
+    select(id="#{label}" name="#{label}")
+      option
+      - each choice in modelRefs[model]
+        option(value="#{choice.id}")= choice.Name
+  br

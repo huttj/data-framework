@@ -24,9 +24,17 @@ router.get('/:entityType', function(req, res, next) {
 
   var entity = util.delimitedToTitle(req.params.entityType);
 
-  req.models[entity].allAsync().then(function(posts) {
-    res.send(JSON.stringify(posts));
-  });
+  req.models[entity].allAsync()
+      .then(function(posts) {
+        return Promise.all(posts.map(req.helpers.getFullModel))
+      })
+      .then(send)
+      .catch(send);
+
+  function send(d) {
+    log(d.stack || d);
+    res.send(d.stack || d);
+  }
 });
 
 module.exports = router;

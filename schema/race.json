@@ -1,5 +1,5 @@
 {
-  "Race": "string",
+  "Name": "string",
   "Census Ethnicity": [
     "Hispanic",
     "White",

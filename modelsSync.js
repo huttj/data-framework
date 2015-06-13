@@ -1,4 +1,4 @@
-var promise = require('bluebird');
+var Promise = require('bluebird');
 var config  = require('./config.json');
 var schema  = new (require('caminte').Schema)('sqlite', { name: 'sqlite', database: "database.db" });
 var fs      = require('fs');
@@ -11,24 +11,30 @@ var PATH    = 'schema';
 var data = fs.readdirSync(PATH).reduce(reduceFn, {
     relations: [],
     schemas: {},
-    models: {}
+    models: {},
+    helpers: {
+        getFullModel: getFullModel
+    }
 });
 
 // Establish relationships
 data.relations.forEach(function (def) {
-    log(def.source + '\t' + def.relation + '\t' + def.target);
+    log(def.source + '\t' + def.relation + '\t' + def.target, 'on', def.foreignKey);
+
     var source   = def.source;
     var target   = def.target;
     var relation = def.relation;
+    var key      = def.foreignKey;
+
     if (source && target && relation) {
-        data.models[source][relation](data.models[target], { as: target });
+        data.models[source][relation](data.models[target], { as: target + 's', foreignKey: key });
     }
 });
 
 // Sync DB
 if (!schema.isActual()) {
     //schema.autoupdate();
-    schema.automigrate();
+    //schema.automigrate(); // This kills the data
 }
 
 // Done!
@@ -53,7 +59,7 @@ function reduceFn(data, file) {
 
         Object.keys(model).forEach(function(key) {
             if (!match(key, /Async/) && typeof model[key] === 'function') {
-                model[key + 'Async'] = promise.promisify(model[key]);
+                model[key + 'Async'] = Promise.promisify(model[key]);
             }
         });
 
@@ -71,6 +77,8 @@ function match(str, regex) {
 }
 
 function translateSchema(modelName, obj) {
+    obj = util.escapeKeys(obj);
+
     var result = {
         schema: {},
         relations: []
@@ -108,7 +116,8 @@ function translateSchema(modelName, obj) {
                 result.relations.push({
                     source: modelName,
                     target: targetModel,
-                    relation: relation
+                    relation: relation,
+                    foreignKey: key
                 });
             }
 
@@ -122,7 +131,31 @@ function translateSchema(modelName, obj) {
         }
     });
 
-    result.schema = util.escapeKeys(result.schema);
+    //result.schema = util.escapeKeys(result.schema);
 
     return result;
+}
+
+function getFullModel(model) {
+
+    var result = {};
+    var models = data.models;
+    for (var key in model) {
+        log(key);
+        if (models[key] && typeof model[key + 's'] == 'function') {
+            var ids = model[key + 's']();
+            var query = models[key].find().in('id', ids);
+            result[key] = Promise.fromNode(query.run.bind(query, {})).tap(log);
+        }
+    }
+
+    log(result);
+
+    return Promise.props(result).then(function(refs) {
+        var json = model.toJSON();
+        for (var i in refs) {
+            json[i] = refs[i];
+        }
+        return json;
+    });
 }

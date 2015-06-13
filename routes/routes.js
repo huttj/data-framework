@@ -49,7 +49,23 @@ router.route('/submit/:type')
             schema: req.params.type
         };
 
-        res.render('submit', variables);
+        var type = req.params.type;
+        var schema = req.schemas[type];
+
+        var modelRefs = Object.keys(schema).reduce(function(l, key) {
+            var modelName = schema[key].substr && schema[key].substr(1);
+            var model = req.models[modelName];
+            if (model) {
+                l[modelName] = model.allAsync();
+            }
+            return l;
+        }, {});
+
+        promise.props(modelRefs).then(function (modelRefs) {
+            log(modelRefs);
+            variables.modelRefs = modelRefs;
+            res.render('submit', variables);
+        })
 
     })
     .post(function(req, res, next) {

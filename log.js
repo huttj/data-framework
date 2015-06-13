@@ -1,4 +1,4 @@
-var COL_WIDTH = 25;
+var COL_WIDTH = 30;
 
 var cwd = process.cwd();
 var reg = new RegExp(/([^()]+)/);
@@ -54,13 +54,17 @@ function log() {
         .split(cwd).join('').substr(1);
 
     // Add spaces to the end of each, to simulate table structure
-    stack = pad(color(fnName, 'magenta'), COL_WIDTH) + pad(color(fileName, 'yellow'), COL_WIDTH);
+    //stack = pad(color(fnName, 'magenta'), COL_WIDTH) + pad(color(fileName, 'yellow'), COL_WIDTH);
+    var file = fileName.split(':');
+
+    stack = color(file.shift(), 'green') + ':' + color(file.join(':'), 'yellow');
 
     // We're going to apply console.log, so we need to insert the stack into the arguments
     var args = Array.prototype.slice.call(arguments);
     args.unshift(stack);
 
     console.log.apply(console, args);
+    console.log();
 }
 
 module.exports = log;
