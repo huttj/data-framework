@@ -196,13 +196,13 @@ function makeGetFullModel(modelName) {
                 .catch(log);
 
             function addToFullModel(objs) {
-                objs = objs.map(toObject);
+                objs = objs.map(toObject).map(util.unescapeKeysAndProps);
                 fullModel[fk.propName] = objs.length < 2 ? objs[0] : objs;
             }
         }
 
         function returnFullModel() {
-            return fullModel;
+            return util.unescapeKeysAndProps(fullModel);
         }
     }
 }

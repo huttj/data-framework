@@ -78,8 +78,23 @@ util.spaceToSnake = function spaceToSnake(str) {
     return str && str.replace(/ /g, '_');
 };
 
-util.escapeKeys   = makeTransformKeysFunction(util.spaceToSnake);
-util.unescapeKeys = makeTransformKeysFunction(util.snakeToSpace);
+util.escapeKeys    = makeTransformKeysFunction(util.spaceToSnake);
+util.unescapeKeys  = makeTransformKeysFunction(util.snakeToSpace);
+
+util.unescapeProps = function unescapeProps(obj) {
+    return obj && Object.keys(obj).reduce(function(res, key) {
+        if (typeof obj[key] === 'string') {
+            res[key] = decodeURI(obj[key]);
+        } else {
+            res[key] = obj[key];
+        }
+        return res;
+    }, {});
+};
+
+util.unescapeKeysAndProps = function(obj) {
+    return util.unescapeProps(util.unescapeKeys(obj));
+};
 
 function makeTransformKeysFunction(transformation) {
     return function transformKeys(obj) {

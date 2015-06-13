@@ -7,4 +7,4 @@ block content
   ul
     - for val, key in schemas
       li
-        a(href="/submit/#{key}") #{util.camelToTitle(key)} (#{counts[key]})
+        a(href="/#{key}") #{util.camelToTitle(key)} (#{counts[key]})
