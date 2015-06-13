@@ -15,7 +15,7 @@
   ],
   "Disposition": "string",
 
-  "Mental Illness": ">MentalIllness",
+  "Mental Illness": ">Mental_Illness",
   "Race": ">Race",
   "Submitter": ">Submitter",
   "Location of Death": ">Location",

@@ -20,20 +20,22 @@ router.get('/entities', function(req, res, next) {
 
 /* GET users listing. */
 router.get('/:entityType', function(req, res, next) {
-  log('GET', '/' + req.param);
 
   var entity = util.delimitedToTitle(req.params.entityType);
+  log('GET', '/' + entity);
 
   req.models[entity].allAsync()
-      .then(function(posts) {
-        return Promise.all(posts.map(req.helpers.getFullModel))
+      .then(function (entities) {
+        return Promise.all(entities.map(function(entity) {
+          return entity.getFullModel().tap(log);
+        }))
       })
       .then(send)
       .catch(send);
 
   function send(d) {
-    log(d.stack || d);
-    res.send(d.stack || d);
+    //log(d.stack || d);
+    res.send(JSON.stringify(d.stack || d, 2));
   }
 });
 

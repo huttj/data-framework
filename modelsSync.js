@@ -11,10 +11,7 @@ var PATH    = 'schema';
 var data = fs.readdirSync(PATH).reduce(reduceFn, {
     relations: [],
     schemas: {},
-    models: {},
-    helpers: {
-        getFullModel: getFullModel
-    }
+    models: {}
 });
 
 // Establish relationships
@@ -28,7 +25,12 @@ data.relations.forEach(function (def) {
 
     if (source && target && relation) {
         data.models[source][relation](data.models[target], { as: target + 's', foreignKey: key });
+
     }
+});
+
+Object.keys(data.models).forEach(function (modelName) {
+    data.models[modelName].prototype.getFullModel = makeGetFullModel(modelName)
 });
 
 // Sync DB
@@ -41,7 +43,7 @@ if (!schema.isActual()) {
 module.exports = data;
 
 function reduceFn(data, file) {
-    var modelName = util.delimitedToTitle(match(file, /([^.]+)\.json/));
+    var modelName = match(file, /([^.]+)\.json/);
 
     if (modelName) {
         var json = require('./' + PATH + '/' + file);
@@ -112,7 +114,7 @@ function translateSchema(modelName, obj) {
             // It must be a relation
             } else {
                 var relation = relationMap[obj[key][0]];
-                var targetModel = util.delimitedToTitle(obj[key].substr(1));
+                var targetModel = obj[key].substr(1);
                 result.relations.push({
                     source: modelName,
                     target: targetModel,
@@ -136,26 +138,29 @@ function translateSchema(modelName, obj) {
     return result;
 }
 
-function getFullModel(model) {
-
-    var result = {};
-    var models = data.models;
-    for (var key in model) {
-        log(key);
-        if (models[key] && typeof model[key + 's'] == 'function') {
-            var ids = model[key + 's']();
-            var query = models[key].find().in('id', ids);
-            result[key] = Promise.fromNode(query.run.bind(query, {})).tap(log);
+// My masterpiece.
+function makeGetFullModel(modelName) {
+    log(modelName);
+    var foreignKeys = [];
+    var schema = data.schemas[modelName];
+    for (var key in schema) {
+        if ('-+<>'.match(schema[key][0])) {
+            foreignKeys.push({
+                key: key.replace(/ /g, '_'),
+                obj: schema[key].substr(1)
+            });
         }
     }
-
-    log(result);
-
-    return Promise.props(result).then(function(refs) {
-        var json = model.toJSON();
-        for (var i in refs) {
-            json[i] = refs[i];
-        }
-        return json;
-    });
+    return function getFullModel() {
+        var json = this.toObject();
+        var promises = foreignKeys.map(function(fk) {
+            var ids = this[fk.obj + 's']();
+            var query = data.models[fk.obj].find().in('id', ids);
+            return Promise.fromNode(query.run.bind(query)).then(function(objs) {
+                log(fk.key, objs);
+                json[fk.key] = objs.map(function(o) { return o.toObject() });
+            }).catch(log)
+        }.bind(this));
+        return Promise.all(promises).then(function() { return json; });
+    }
 }
