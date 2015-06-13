@@ -11,7 +11,8 @@ var PATH    = 'schema';
 var data = fs.readdirSync(PATH).reduce(reduceFn, {
     relations: [],
     schemas: {},
-    models: {}
+    models: {},
+    fks: {}
 });
 
 // Establish relationships
@@ -138,29 +139,74 @@ function translateSchema(modelName, obj) {
     return result;
 }
 
-// My masterpiece.
+/**
+ * This fn gets instantiated on a per-model basis and is attached to each
+ * model. It uses the schema to loop through each of a model's foreign keys
+ * and gets the actual object corresponding to that key.
+ *
+ * @param modelName
+ * @returns {Function}
+ */
 function makeGetFullModel(modelName) {
-    log(modelName);
+
+    data.fks[modelName] = [];
+
+    // Cache a list of the foreign keys corresponding to the model in question,
+    // for easy reference within the getFullModel function
     var foreignKeys = [];
     var schema = data.schemas[modelName];
     for (var key in schema) {
+        // If it's a relation definition
         if ('-+<>'.match(schema[key][0])) {
-            foreignKeys.push({
-                key: key.replace(/ /g, '_'),
-                obj: schema[key].substr(1)
-            });
+            var fk = {
+                // What the foreign object is names on the local object
+                propName: key.replace(/ /g, '_'),
+                // What the foreign object's model is named
+                modelName: schema[key].substr(1)
+            };
+            foreignKeys.push(fk);
+
+            // Piggy-back on this
+            data.fks[modelName].push(fk);
         }
     }
+
     return function getFullModel() {
-        var json = this.toObject();
-        var promises = foreignKeys.map(function(fk) {
-            var ids = this[fk.obj + 's']();
-            var query = data.models[fk.obj].find().in('id', ids);
-            return Promise.fromNode(query.run.bind(query)).then(function(objs) {
-                log(fk.key, objs);
-                json[fk.key] = objs.map(function(o) { return o.toObject() });
-            }).catch(log)
-        }.bind(this));
-        return Promise.all(promises).then(function() { return json; });
+        // Get local properties
+        var fullModel = this.toObject();
+
+        // For each relation, load the corresponding objects
+        var foreignObjects = foreignKeys.map(loadForeignObject.bind(this));
+
+        // Resolve when all of the foreign objects are loaded
+        return Promise.all(foreignObjects).then(returnFullModel);
+
+        function loadForeignObject(fk) {
+
+            // The relation is stored with an 's'; Calling
+            // it retrieves the ID(s?) of the foreign object(s)
+            var ids = this[fk.modelName + 's']();
+
+            // Prep a query of the foreign object's model, to use in a promise
+            var query = data.models[fk.modelName].find().in('id', ids);
+
+            // Run the query and add the foreign objects to the fullModel
+            return Promise.fromNode(query.run.bind(query))
+                .then(addToFullModel)
+                .catch(log);
+
+            function addToFullModel(objs) {
+                objs = objs.map(toObject);
+                fullModel[fk.propName] = objs.length < 2 ? objs[0] : objs;
+            }
+        }
+
+        function returnFullModel() {
+            return fullModel;
+        }
     }
+}
+
+function toObject(o) {
+    return o.toObject();
 }

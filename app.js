@@ -32,7 +32,7 @@ app.use(function (req, res, next) {
   req.schemas = data.schemas;
   req.schemasFlat = data.schemasFlat;
   req.util = util;
-  req.helpers = data.helpers;
+  req.fks = data.fks;
   next();
 });
 
