@@ -1,11 +1,13 @@
 extends layout
 
 block content
-  h1= title
-  p Welcome to #{title}
+  h1
+   a(href="/")= title
+
+  h2 New #{schema.replace(/_/g, ' ')}
 
 
-  form(action="/submit/#{schema}" method="POST")
+  form(action="/#{schema}/new" method="POST")
     +parseObject(schemas[schema])
     button(type="submit") Submit
 

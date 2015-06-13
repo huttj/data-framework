@@ -6,10 +6,10 @@ var log = require(__basedir + 'log');
 var util = require(__basedir + 'util');
 
 // Redirect general api calls to latest version
-router.get(/\/api\/(?!v\d)(.*)/, function (req, res, next) {
-    var path = req.params[0] + '';
-    res.redirect('/api/v1/' + path);
-});
+//router.get(/\/api\/(?!v\d)(.*)/, function (req, res, next) {
+//    var path = req.params[0] + '';
+//    res.redirect('/api/v1/' + path);
+//});
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
@@ -39,7 +39,7 @@ router.get('/', function(req, res, next) {
 
 });
 
-router.route('/submit/:type')
+router.route('/:type/new')
     .get(function(req, res, next) {
 
         var variables = {
@@ -64,7 +64,7 @@ router.route('/submit/:type')
         promise.props(modelRefs).then(function (modelRefs) {
             log(modelRefs);
             variables.modelRefs = modelRefs;
-            res.render('submit', variables);
+            res.render('new', variables);
         })
 
     })
@@ -76,7 +76,7 @@ router.route('/submit/:type')
         log(req.body, data, modelName);
 
         req.models[modelName].create(data, function() {
-            res.redirect('/');
+            res.redirect('/' + modelName);
         });
 
     });
@@ -162,6 +162,7 @@ router.route('/:entity/:id')
             .then(getFullModel)
             .then(function (model) {
                 variables.model = util.unescapeKeys(model);
+                log(variables.model);
                 res.render('entity-detail', variables);
             });
 

@@ -36,7 +36,7 @@ Object.keys(data.models).forEach(function (modelName) {
 
 // Sync DB
 if (!schema.isActual()) {
-    //schema.autoupdate();
+    schema.autoupdate();
     //schema.automigrate(); // This kills the data
 }
 

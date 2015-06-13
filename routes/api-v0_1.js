@@ -37,17 +37,20 @@ router.get('/:entityType', function(req, res, next) {
 
       // It's empty...ignore it
       if (val === '') {
+        log('param is empty', val);
         delete query[param];
         return;
       }
 
       // If it's a number, it'll be used as an ID
       if (!isNaN(Number(val)) && val !== '') {
+        log('param is number', val);
         return;
       }
 
       // It's an array of IDs!
       if (val.match(/^\[(?: ?\d+,)* ?\d+\]$/)) {
+        log('param is array', val);
         query[param] = { 'in': JSON.parse(val) };
         return;
       }
@@ -58,6 +61,8 @@ router.get('/:entityType', function(req, res, next) {
 
         var subquery = { where: parseSubquery(rawsubquery[1]) };
 
+        log('param is subquery', subquery);
+
         query[param] = model
             .findAsync(subquery)
             .then(getIds)
@@ -67,10 +72,12 @@ router.get('/:entityType', function(req, res, next) {
       }
 
       // Try matching it on the name
+      log('param is Name', val);
       if (val[0] === '~') val = { nlike: val.substr(1) };
       var nameQuery = { where: { Name: val } };
+      log('nameQuery', nameQuery, param, model);
       query[param] = model
-          .findAsync(nameQuery)
+          .allAsync(nameQuery)
           .then(getIds)
           .catch(blankInClause);
     }
@@ -91,7 +98,7 @@ router.get('/:entityType', function(req, res, next) {
   // Get all matching entities
   Promise.props(query)
     .then(function(q) {
-      req.models[entity].findAsync(q)
+      req.models[entity].findAsync({ where: q })
           .then(function (entities) {
             return Promise.all(entities.map(function(entity) {
               return entity.getFullModel();

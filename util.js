@@ -84,7 +84,7 @@ util.unescapeKeys  = makeTransformKeysFunction(util.snakeToSpace);
 util.unescapeProps = function unescapeProps(obj) {
     return obj && Object.keys(obj).reduce(function(res, key) {
         if (typeof obj[key] === 'string') {
-            res[key] = decodeURI(obj[key]);
+            res[key] = decodeURIComponent(obj[key]);
         } else {
             res[key] = obj[key];
         }

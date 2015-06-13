@@ -11,7 +11,7 @@ var data          = require('./modelsSync');
 
 /** Routes */
 var routes = require('./routes/routes');
-var api_v1 = require('./routes/api-v1');
+var api_v0_1 = require('./routes/api-v0_1.js');
 
 var app = express();
 
@@ -36,8 +36,8 @@ app.use(function (req, res, next) {
   next();
 });
 
+app.use('/api/v0.1', api_v0_1);
 app.use('/', routes);
-app.use('/api/v1', api_v1);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

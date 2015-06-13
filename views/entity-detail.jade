@@ -1,11 +1,15 @@
 extends layout
+
 block content
-  h1= title
-  p Welcome to #{title}
+  h1
+    a(href="/")= title
+
+  h2 #{entity.replace(/_/g, ' ')} Detail
+
   form(action="/#{entity}/#{model.id}" method="POST")
     +parseObject(schema)
     button(type="submit") Save
-    input(type="number" value="#{model.id}" name="id")
+    input(type="hidden" value="#{model.id}" name="id")
 
 mixin parseObject(obj)
   div
@@ -36,10 +40,13 @@ mixin makeInput(label, type, enumVal)
           option(value="#{choice}" selected="#{model[label] === choice}")= choice
   br
   
-mixin makeModelSelector(label, model)
+mixin makeModelSelector(label, modelName)
   label(for="#{label}")= label
     select(id="#{label}" name="#{label}")
-      option
-      - each choice in modelRefs[model]
-        option(value="#{choice.id}" selected="#{model[label] && model[label].id === choice.id}")= choice.Name
+      option (Please Select)
+      - each choice in modelRefs[modelName]
+        - if (model[label] && model[label].id === choice.id)
+          option(value="#{choice.id}" selected)= choice.Name
+        - else
+          option(value="#{choice.id}")= choice.Name
   br
