@@ -56,7 +56,7 @@ router.route('/:type/new')
             var modelName = schema[key].substr && schema[key].substr(1);
             var model = req.models[modelName];
             if (model) {
-                l[modelName] = model.allAsync();
+                l[modelName] = model.allAsync().then(toObjectUnescapeProps);
             }
             return l;
         }, {});
@@ -65,7 +65,13 @@ router.route('/:type/new')
             log(modelRefs);
             variables.modelRefs = modelRefs;
             res.render('new', variables);
-        })
+        });
+
+        function toObjectUnescapeProps(arry) {
+            return arry.map(function (o) {
+                return util.unescapeProps(o.toObject());
+            });
+        }
 
     })
     .post(function(req, res, next) {
@@ -74,6 +80,9 @@ router.route('/:type/new')
         var data = util.escapeKeys(req.body);
 
         log(req.body, data, modelName);
+
+        // In case posting from "Save as New"
+        delete data.id;
 
         req.models[modelName].create(data, function() {
             res.redirect('/' + modelName);
@@ -193,6 +202,20 @@ router.route('/:entity/:id')
         log(data, id);
 
         model.update({ id: id }, data, function() {
+            res.redirect('/' + modelName);
+        });
+
+    });
+
+router.route('/:entity/:id/delete')
+    .post(function(req, res) {
+
+        var id        = req.params.id;
+        var modelName = req.params.entity;
+        var model     = req.models[modelName];
+        var data      = util.escapeKeys(req.body);
+
+        model.destroyById(id, function() {
             res.redirect('/' + modelName);
         });
 

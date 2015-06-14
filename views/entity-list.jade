@@ -1,26 +1,35 @@
 extends layout
 
 block content
-  h1
-    a(href="/")= title
+  .row
+    h1
+      a(href="/")= title
 
-  h2 #{entity.replace(/_/g, ' ')} List
+  .row
+    h2.pull-left #{entity.replace(/_/g, ' ')} List
+    a(href="/#{entity}/new" style="margin-top: 1.25em").btn.btn-primary.pull-right New
 
-  a(href="/#{entity}/new") New
 
-  table
-    tr
-      - for val, key in schema
-        td= key
-    - for model in models
-      tr
-        - for val, key in model
-          - if (schema[key] && typeof val === 'object' && val)
+  .row
+    table.table.table-hover
+      thead
+        tr
+          - for val, key in schema
+            th= key
+          th Delete
+      tbody
+        - for model in models
+          tr
+            - for val, key in model
+              - if (schema[key] && typeof val === 'object' && val)
+                td
+                  a(href="/#{fks[key.replace(/ /g, '_')]}/#{val.id}") #{val.Name}
+              - else if (schema[key])
+                - if (key === 'Name')
+                  td
+                    a(href="/#{entity}/#{model.id}")= val || '(unknown)'
+                - else
+                  td= val
             td
-              a(href="/#{fks[key.replace(/ /g, '_')]}/#{val.id}") #{val.Name}
-          - else if (schema[key])
-            - if (key === 'Name')
-              td
-                a(href="/#{entity}/#{model.id}")= val || '(unknown)'
-            - else
-              td= val
+              form(action="/#{entity}/#{model.id}/delete" method="POST")
+                button(type="submit").btn.btn-danger X

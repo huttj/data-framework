@@ -1,15 +1,19 @@
 extends layout
 
 block content
-  h1
-   a(href="/")= title
+  .row
+    h1
+      a(href="/")= title
+  .row
+    h2 New #{schema.replace(/_/g, ' ')}
 
-  h2 New #{schema.replace(/_/g, ' ')}
-
-
-  form(action="/#{schema}/new" method="POST")
-    +parseObject(schemas[schema])
-    button(type="submit") Submit
+  .row
+    form(action="/#{schema}/new" method="POST")
+      .row
+        +parseObject(schemas[schema])
+      .pull-right
+        a(href="/#{schema}" style="margin-right: .33em").btn.btn-default Cancel
+        button(type="submit").btn.btn-primary Submit
 
 mixin parseObject(obj)
   div
@@ -27,23 +31,25 @@ mixin parseObject(obj)
           // mixin parseObject(val)
 
 mixin makeInput(label, type, enumVal)
-  label(for="#{label}")= label
-  - if (type === 'string')
-    input(type="text" id="#{label}" name="#{label}")
-  - else if (type === 'number')
-    input(type="number" id="#{label}" name="#{label}")
-  - if (type === 'date')
-    input(type="date" id="#{label}" name="#{label}")
-  - else if (type === 'enum' && enumVal)
-    select(id="#{label}" name="#{label}")
-      - each choice in enumVal
-        option(value="#{choice}")= choice
-  br
+  .col-lg-3.col-md-4.col-sm-6
+    .form-group
+      label(for="#{label}")= label
+      - if (type === 'string')
+        input(type="text" id="#{label}" name="#{label}").form-control
+      - else if (type === 'number')
+        input(type="number" id="#{label}" name="#{label}").form-control
+      - if (type === 'date')
+        input(type="date" id="#{label}" name="#{label}").form-control
+      - else if (type === 'enum' && enumVal)
+        select(id="#{label}" name="#{label}").form-control
+          - each choice in enumVal
+            option(value="#{choice}")= choice
 
 mixin makeModelSelector(label, model)
-  label(for="#{label}")= label
-    select(id="#{label}" name="#{label}")
-      option
-      - each choice in modelRefs[model]
-        option(value="#{choice.id}")= choice.Name
-  br
+  .col-lg-3.col-md-4.col-sm-6
+    .form-group
+      label(for="#{label}")= label
+      select(id="#{label}" name="#{label}").form-control
+        option
+        - each choice in modelRefs[model]
+          option(value="#{choice.id}")= choice.Name
