@@ -192,7 +192,9 @@ router.route('/:entity/:id')
 
         Object.keys(data).forEach(function(key) {
             var num = Number(data[key]);
-            if (data[key] !== '' && !isNaN(num)) {
+            if (data[key] === '') {
+                data[key] = null;
+            } else if (!isNaN(num)) {
                 data[key] = num;
             }
         });
